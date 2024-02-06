@@ -20,13 +20,21 @@ def recovery_script(log:list):  #<--- Your CODE
     pass
 
 def transaction_processing(): #<-- Your CODE
+    global DB_Log
+    for transaction in transactions:
+        uID, attribute, newValue = transaction
+        for db in data_base[1:]: 
+            if db[0] == uID:  
+                DB_Log.append({'Before': db.copy()})  
+                attribute_index = data_base[0].index(attribute)  
+                db[attribute_index] = newValue  
+                DB_Log.append({'After': db.copy()})  
+                break
     '''
     1. Process transaction in the transaction queue.
     2. Updates DB_Log accordingly
     3. This function does NOT commit the updates, just execute them
     '''
-    pass
-    
 
 def read_file(file_name:str)->list:
     '''
