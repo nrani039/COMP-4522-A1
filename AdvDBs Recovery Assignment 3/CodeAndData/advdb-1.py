@@ -12,15 +12,24 @@ transactions = [['1', 'Department', 'Music'], ['5', 'Civil_status', 'Divorced'],
 DB_Log = [] # <-- You WILL populate this as you go
 
 def recovery_script(log:list):  #<--- Your CODE
-    '''
-    Restore the database to stable and sound condition, by processing the DB log.
-    '''
-    print("Calling your recovery script with DB_Log as an argument.")
-    print("Recovery in process ...\n")
-    pass
+    global data_base  #ex
+    for log_entry in reversed(log):  # Revert changes in reverse order
+        if 'Before' in log_entry:
+            entry = log_entry['Before']
+            for db_entry in data_base[1:]:
+                if db_entry[0] == entry[0]:
+                    data_base[data_base.index(db_entry)] = entry
+                    break
+    # '''
+    # Restore the database to stable and sound condition, by processing the DB log.
+    # '''
+    # print("Calling your recovery script with DB_Log as an argument.")
+    # print("Recovery in process ...\n")
+    # pass
 
 def transaction_processing(): #<-- Your CODE
     global DB_Log
+    global data_base #ex
     for transaction in transactions:
         uID, attribute, newValue = transaction
         for db in data_base[1:]: 
@@ -72,6 +81,7 @@ def is_there_a_failure()->bool:
     return result
 
 def main():
+    global data_base #ex
     number_of_transactions = len(transactions)
     must_recover = False
     data_base = read_file('Employees_DB_ADV.csv')
@@ -89,6 +99,7 @@ def main():
                 print(f'There was a failure whilst processing transaction No. {failing_transaction_index}.')
                 break
             else:
+                transaction_processing()  # Call transaction_processing function here ex
                 print(f'Transaction No. {index+1} has been commited! Changes are permanent.')
                 
     if must_recover:
