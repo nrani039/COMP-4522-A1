@@ -12,8 +12,8 @@ transactions = [['1', 'Department', 'Music'], ['5', 'Civil_status', 'Divorced'],
 DB_Log = [] # <-- You WILL populate this as you go
 
 def recovery_script(log:list):  #<--- Your CODE
-    global data_base  #ex
-    for log_entry in reversed(log):  # Revert changes in reverse order
+    global data_base
+    for log_entry in reversed(log):
         if 'Before' in log_entry:
             entry = log_entry['Before']
             for db_entry in data_base[1:]:
@@ -29,7 +29,7 @@ def recovery_script(log:list):  #<--- Your CODE
 
 def transaction_processing(): #<-- Your CODE
     global DB_Log
-    global data_base #ex
+    global data_base 
     for transaction in transactions:
         uID, attribute, newValue = transaction
         for db in data_base[1:]: 
@@ -81,7 +81,7 @@ def is_there_a_failure()->bool:
     return result
 
 def main():
-    global data_base #ex
+    global data_base
     number_of_transactions = len(transactions)
     must_recover = False
     data_base = read_file('Employees_DB_ADV.csv')
