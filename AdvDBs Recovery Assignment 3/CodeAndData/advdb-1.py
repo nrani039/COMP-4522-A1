@@ -20,12 +20,12 @@ def recovery_script(log:list):  #<--- Your CODE
                 if db_entry[0] == entry[0]:
                     data_base[data_base.index(db_entry)] = entry
                     break
-    # '''
-    # Restore the database to stable and sound condition, by processing the DB log.
-    # '''
-    # print("Calling your recovery script with DB_Log as an argument.")
-    # print("Recovery in process ...\n")
-    # pass
+    '''
+    Restore the database to stable and sound condition, by processing the DB log.
+    '''
+    print("Calling your recovery script with DB_Log as an argument.")
+    print("Recovery in process ...\n")
+    pass
 
 def transaction_processing(): #<-- Your CODE
     global DB_Log
