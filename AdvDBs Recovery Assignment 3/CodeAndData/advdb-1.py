@@ -11,6 +11,8 @@ transactions = [['1', 'Department', 'Music'], ['5', 'Civil_status', 'Divorced'],
                 ['15', 'Salary', '200000']]
 DB_Log = [] # <-- You WILL populate this as you go
 
+
+
 def recovery_script(log:list):  #<--- Your CODE
     global data_base
     for log_entry in reversed(log):
@@ -27,23 +29,38 @@ def recovery_script(log:list):  #<--- Your CODE
     print("Recovery in process ...\n")
     pass
 
-def transaction_processing(): #<-- Your CODE
+# def transaction_processing(): #<-- Your CODE
+#     global DB_Log
+#     global data_base 
+#     header = data_base[0]
+#     for transaction in transactions:
+#         uID, attribute, newValue = transaction
+#         for db in data_base[1:]: 
+#             if db[0] == uID:  
+#                 DB_Log.append({'Before': db.copy()})  
+#                 attribute_index = header.index(attribute)
+#                 # attribute_index = data_base[0].index(attribute)  
+#                 db[attribute_index] = newValue  
+#                 DB_Log.append({'After': db.copy()})  
+#                 break
+#     '''
+#     1. Process transaction in the transaction queue.
+#     2. Updates DB_Log accordingly
+#     3. This function does NOT commit the updates, just execute them
+#     '''
+
+def transaction_processing():
     global DB_Log
-    global data_base 
+    global data_base
     for transaction in transactions:
         uID, attribute, newValue = transaction
-        for db in data_base[1:]: 
-            if db[0] == uID:  
-                DB_Log.append({'Before': db.copy()})  
-                attribute_index = data_base[0].index(attribute)  
-                db[attribute_index] = newValue  
-                DB_Log.append({'After': db.copy()})  
+        for db in data_base[1:]:
+            if db[0] == uID:
+                DB_Log.append({'Before': db.copy()})
+                attribute_index = data_base[0].index(attribute)
+                db[attribute_index] = newValue
+                DB_Log.append({'After': db.copy()})
                 break
-    '''
-    1. Process transaction in the transaction queue.
-    2. Updates DB_Log accordingly
-    3. This function does NOT commit the updates, just execute them
-    '''
 
 def read_file(file_name:str)->list:
     '''
@@ -80,40 +97,37 @@ def is_there_a_failure()->bool:
         result = False
     return result
 
+
 def main():
     global data_base
     number_of_transactions = len(transactions)
     must_recover = False
-    data_base = read_file('Employees_DB_ADV.csv')
-    failure = is_there_a_failure()
+    data_base = read_file('/Users/nicoleranieri/Desktop/- COMP 4522/Assignment1/COMP-4522-A1/AdvDBs Recovery Assignment 3/CodeAndData/Employees_DB_ADV.csv')
     failing_transaction_index = None
-    while not failure:
-        # Process transaction
-        for index in range(number_of_transactions):
-            print(f"\nProcessing transaction No. {index+1}.")    #<--- Your CODE (Call function transaction_processing)
-            print("UPDATES have not been committed yet...\n")
-            failure = is_there_a_failure()
-            if failure:
-                must_recover = True
-                failing_transaction_index = index + 1
-                print(f'There was a failure whilst processing transaction No. {failing_transaction_index}.')
-                break
-            else:
-                transaction_processing()  # Call transaction_processing function here ex
-                print(f'Transaction No. {index+1} has been commited! Changes are permanent.')
-                
+    
+    while True: 
+       
+        failure = is_there_a_failure() 
+        if failure:
+            must_recover = True
+            print(f'There was a failure whilst processing transaction No. {failing_transaction_index}.')
+            break  
+        else:
+            for index in range(number_of_transactions):
+                print(f"\nProcessing transaction No. {index+1}.")
+                print("UPDATES have not been committed yet...\n")
+                transaction_processing()  
+                print(f'Transaction No. {index+1} has been committed! Changes are permanent.')
+            break  
     if must_recover:
-        #Call your recovery script
-        recovery_script(DB_Log) ### Call the recovery function to restore DB to sound state
+        recovery_script(DB_Log)
     else:
-        # All transactiones ended up well
-        print("All transaction ended up well.")
+        print("All transactions ended up well.")
         print("Updates to the database were committed!\n")
 
     print('The data entries AFTER updates -and RECOVERY, if necessary- are presented below:')
     for item in data_base:
         print(item)
-    
-main()
 
+main()
 
