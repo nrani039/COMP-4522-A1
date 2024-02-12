@@ -98,11 +98,14 @@ def is_there_a_failure()->bool:
     return result
 
 
+
 def main():
+    global file
+    file = './AdvDBs Recovery Assignment 3/CodeAndData/Employees_DB_ADV.csv';
     global data_base
     number_of_transactions = len(transactions)
     must_recover = False
-    data_base = read_file('/Users/Shamil/Documents/COMP 4522/COMP-4522-A1/CodeAndData/Employees_DB_ADV.csv')
+    data_base = read_file(file)
     for index in range(number_of_transactions):
             print(f"\nProcessing transaction No. {index+1}.")    #<--- Your CODE (Call function transaction_processing)
             print("UPDATES have not been committed yet...\n")
