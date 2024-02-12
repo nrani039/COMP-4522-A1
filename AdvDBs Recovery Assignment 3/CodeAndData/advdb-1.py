@@ -102,27 +102,26 @@ def main():
     global data_base
     number_of_transactions = len(transactions)
     must_recover = False
-    data_base = read_file('/Users/nicoleranieri/Desktop/- COMP 4522/Assignment1/COMP-4522-A1/AdvDBs Recovery Assignment 3/CodeAndData/Employees_DB_ADV.csv')
-    failing_transaction_index = None
-    
-    while True: 
-       
-        failure = is_there_a_failure() 
-        if failure:
-            must_recover = True
-            print(f'There was a failure whilst processing transaction No. {failing_transaction_index}.')
-            break  
-        else:
-            for index in range(number_of_transactions):
-                print(f"\nProcessing transaction No. {index+1}.")
-                print("UPDATES have not been committed yet...\n")
-                transaction_processing()  
-                print(f'Transaction No. {index+1} has been committed! Changes are permanent.')
-            break  
+    data_base = read_file('/Users/Shamil/Documents/COMP 4522/COMP-4522-A1/CodeAndData/Employees_DB_ADV.csv')
+    for index in range(number_of_transactions):
+            print(f"\nProcessing transaction No. {index+1}.")    #<--- Your CODE (Call function transaction_processing)
+            print("UPDATES have not been committed yet...\n")
+            transaction_processing()
+            failure = is_there_a_failure()
+            if failure:
+                must_recover = True
+                failing_transaction_index = index + 1
+                print(f'There was a failure whilst processing transaction No. {failing_transaction_index}.')
+                break
+            else:
+                print(f'Transaction No. {index+1} has been commited! Changes are permanent.')
+                
     if must_recover:
-        recovery_script(DB_Log)
+        #Call your recovery script
+        recovery_script(DB_Log) ### Call the recovery function to restore DB to sound state
     else:
-        print("All transactions ended up well.")
+        # All transactiones ended up well
+        print("All transaction ended up well.")
         print("Updates to the database were committed!\n")
 
     print('The data entries AFTER updates -and RECOVERY, if necessary- are presented below:')
@@ -130,4 +129,3 @@ def main():
         print(item)
 
 main()
-
