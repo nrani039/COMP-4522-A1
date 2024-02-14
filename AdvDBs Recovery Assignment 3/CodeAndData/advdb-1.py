@@ -1,7 +1,6 @@
 # Adv DB Winter 2024 - 1
 
 import random
-import datetime
 import csv
 
 data_base = []  # Global binding for the Database contents
@@ -14,7 +13,6 @@ transactions = [['1', 'Department', 'Music'], ['5', 'Civil_status', 'Divorced'],
 DB_Log = [] # <-- You WILL populate this as you go
 
 
-#Recover back to the original database if a failure occurs
 def recovery_script(log:list):  #<--- Your CODE
     global data_base
     for log_entry in reversed(log):
@@ -31,8 +29,26 @@ def recovery_script(log:list):  #<--- Your CODE
     print("Recovery in process ...\n")
     pass
 
+# def transaction_processing(): #<-- Your CODE
+#     global DB_Log
+#     global data_base 
+#     header = data_base[0]
+#     for transaction in transactions:
+#         uID, attribute, newValue = transaction
+#         for db in data_base[1:]: 
+#             if db[0] == uID:  
+#                 DB_Log.append({'Before': db.copy()})  
+#                 attribute_index = header.index(attribute)
+#                 # attribute_index = data_base[0].index(attribute)  
+#                 db[attribute_index] = newValue  
+#                 DB_Log.append({'After': db.copy()})  
+#                 break
+#     '''
+#     1. Process transaction in the transaction queue.
+#     2. Updates DB_Log accordingly
+#     3. This function does NOT commit the updates, just execute them
+#     '''
 
-#Processes transactions, update the  database, and logs before and after each reach has been reviewed.
 def transaction_processing():
     global DB_Log
     global data_base
@@ -43,9 +59,10 @@ def transaction_processing():
                 DB_Log.append({'Before': db.copy()})
                 attribute_index = data_base[0].index(attribute)
                 db[attribute_index] = newValue
-                DB_Log.append({'After': db.copy()})
+                # Mark this transaction as committed immediately after successful update
+                committed_entry = db.copy()
+                DB_Log.append({'After': committed_entry, 'Committed': True})
                 break
-
 
 def read_file(file_name:str)->list:
     '''
@@ -82,8 +99,6 @@ def is_there_a_failure()->bool:
         result = False
     return result
 
-
-
 #Write a new CSV file when all of the transaction has been successfully commited and updated. 
 def writeCommittedTransactionToCSV(log, file_name):
     committed_transactions = [entry['After'] for entry in log if entry.get('Committed')]
@@ -94,38 +109,33 @@ def writeCommittedTransactionToCSV(log, file_name):
         for transaction in committed_transactions:
             writer.writerow(transaction)
 
-
-    """
-    loads the database from a CSV, then checking if the transaction detected any errors.
-    If there is an error, notify the user that one of the transaction failed and recover
-    back to the original database. Otherwise call the writeCommitedTransactionToCSV to
-    make a new CSV file with the updated and successful transaction now commited. 
-    """
 def main():
-    global file
-    file = 'Employees_DB_ADV.csv';
     global data_base
     number_of_transactions = len(transactions)
     must_recover = False
-    data_base = read_file(file)
-    for index in range(number_of_transactions):
-            print(f"\nProcessing transaction No. {index+1}.")    #<--- Your CODE (Call function transaction_processing)
-            print("UPDATES have not been committed yet...\n")
-            transaction_processing()
-            failure = is_there_a_failure()
-            if failure:
-                must_recover = True
-                failing_transaction_index = index + 1
-                print(f'There was a failure whilst processing transaction No. {failing_transaction_index}.')
-                break
-            else:
-                print(f'Transaction No. {index+1} has been commited! Changes are permanent.')
-    if not must_recover:
-        writeCommittedTransactionToCSV(DB_Log, 'Committed_Transactions.csv')
-        print("All transactions ended up well. Committed transactions are saved to CSV.")
-    else:
-        # Call your recovery script
+    data_base = read_file('Employees_DB_ADV.csv')
+    failing_transaction_index = None
+    
+    while True: 
+       
+        failure = is_there_a_failure() 
+        if failure:
+            must_recover = True
+            print(f'There was a failure whilst processing transaction No. {failing_transaction_index}.')
+            break  
+        else:
+            for index in range(number_of_transactions):
+                print(f"\nProcessing transaction No. {index+1}.")
+                print("UPDATES have not been committed yet...\n")
+                transaction_processing()  
+                print(f'Transaction No. {index+1} has been committed! Changes are permanent.')
+            break  
+    if must_recover:
         recovery_script(DB_Log)
+    else:
+        writeCommittedTransactionToCSV(DB_Log, 'Committed_Transactions.csv')
+        print("All transactions ended up well. Committed transactions are saved to 'Committed_Transactions.csv' file.")
+        print("Updates to the database were committed!\n")
 
     print('The data entries AFTER updates -and RECOVERY, if necessary- are presented below:')
     for item in data_base:
