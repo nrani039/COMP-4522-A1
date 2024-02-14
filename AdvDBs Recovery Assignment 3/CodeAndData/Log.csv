@@ -1,0 +1,19 @@
+Transaction,Status
+Transaction 1,Rolled back
+Transaction 2,Committed
+Transaction 3,Rolled back
+Transaction 4,Committed
+Transaction 5,Rolled back
+Transaction 6,Committed
+Transaction 7,Rolled back
+Transaction 8,Committed
+Transaction 9,Rolled back
+Transaction 10,Committed
+Transaction 11,Rolled back
+Transaction 12,Committed
+Transaction 13,Rolled back
+Transaction 14,Committed
+Transaction 15,Rolled back
+Transaction 16,Committed
+Transaction 17,Rolled back
+Transaction 18,Committed
