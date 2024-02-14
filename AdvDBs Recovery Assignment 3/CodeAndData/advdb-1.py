@@ -109,6 +109,14 @@ def writeCommittedTransactionToCSV(log, file_name):
         for transaction in committed_transactions:
             writer.writerow(transaction)
 
+def writeTransactionLogToCSV(log, file_name):
+    with open(file_name, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['Transaction', 'Status'])
+        for i, entry in enumerate(log):
+            status = 'Committed' if entry.get('Committed') else 'Rolled back'
+            writer.writerow([f'Transaction {i+1}', status])
+
 def main():
     global data_base
     number_of_transactions = len(transactions)
@@ -134,10 +142,11 @@ def main():
         recovery_script(DB_Log)
     else:
         writeCommittedTransactionToCSV(DB_Log, 'Committed_Transactions.csv')
+        writeTransactionLogToCSV(DB_Log, 'Log.csv') 
         print("All transactions ended up well. Committed transactions are saved to 'Committed_Transactions.csv' file.")
         print("Updates to the database were committed!\n")
-
-    print('The data entries AFTER updates -and RECOVERY, if necessary- are presented below:')
+        print('The data entries AFTER updates -and RECOVERY, if necessary- are presented below:')
+        
     for item in data_base:
         print(item)
 
