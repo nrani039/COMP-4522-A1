@@ -2,6 +2,7 @@
 
 import random
 import csv
+from datetime import datetime
 
 data_base = []  # Global binding for the Database contents
 '''
@@ -52,17 +53,17 @@ def recovery_script(log:list):  #<--- Your CODE
 def transaction_processing():
     global DB_Log
     global data_base
-    for transaction in transactions:
+    for index, transaction in enumerate(transactions, start=1):  # Changed
         uID, attribute, newValue = transaction
         for db in data_base[1:]:
             if db[0] == uID:
-                DB_Log.append({'Before': db.copy()})
+                DB_Log.append({'Transaction': index, 'Time': datetime.now(), 'Before': db.copy()})
                 attribute_index = data_base[0].index(attribute)
                 db[attribute_index] = newValue
-                # Mark this transaction as committed immediately after successful update
                 committed_entry = db.copy()
-                DB_Log.append({'After': committed_entry, 'Committed': True})
+                DB_Log.append({'Transaction': index, 'Time': datetime.now(), 'After': committed_entry, 'Committed': True})
                 break
+
 
 def read_file(file_name:str)->list:
     '''
@@ -109,13 +110,16 @@ def writeCommittedTransactionToCSV(log, file_name):
         for transaction in committed_transactions:
             writer.writerow(transaction)
 
+
 def writeTransactionLogToCSV(log, file_name):
     with open(file_name, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
-        writer.writerow(['Transaction', 'Status'])
-        for i, entry in enumerate(log):
+        writer.writerow(['Transaction', 'Time', 'Status'])
+        for entry in log:
             status = 'Committed' if entry.get('Committed') else 'Rolled back'
-            writer.writerow([f'Transaction {i+1}', status])
+            transaction = entry.get('Transaction', '')
+            time = entry.get('Time', '')
+            writer.writerow([transaction, time, status])
 
 def main():
     global data_base
@@ -140,9 +144,11 @@ def main():
             break  
     if must_recover:
         recovery_script(DB_Log)
+        writeTransactionLogToCSV(DB_Log, 'FailLog.csv') 
+
     else:
         writeCommittedTransactionToCSV(DB_Log, 'Committed_Transactions.csv')
-        writeTransactionLogToCSV(DB_Log, 'Log.csv') 
+        writeTransactionLogToCSV(DB_Log, 'CommitLog.csv') 
         print("All transactions ended up well. Committed transactions are saved to 'Committed_Transactions.csv' file.")
         print("Updates to the database were committed!\n")
         print('The data entries AFTER updates -and RECOVERY, if necessary- are presented below:')
