@@ -14,15 +14,15 @@ transactions = [['1', 'Department', 'Music'], ['5', 'Civil_status', 'Divorced'],
 DB_Log = [] # <-- You WILL populate this as you go
 
 
-def recovery_script(log:list):  #<--- Your CODE
+def recovery_script(log):
     global data_base
     for log_entry in reversed(log):
-        if 'Before' in log_entry:
-            entry = log_entry['Before']
-            for db_entry in data_base[1:]:
-                if db_entry[0] == entry[0]:
-                    data_base[data_base.index(db_entry)] = entry
-                    break
+        if not log_entry.get('Committed'):
+            before_state = log_entry['Before']
+            for i, db_entry in enumerate(data_base):
+                if db_entry[0] == before_state[0]:
+                    data_base[i] = before_state
+            break
     '''
     Restore the database to stable and sound condition, by processing the DB log.
     '''
@@ -30,21 +30,36 @@ def recovery_script(log:list):  #<--- Your CODE
     print("Recovery in process ...\n")
     pass
 
-def transaction_processing():
+def process_transaction(index, transaction):
     global DB_Log
-    global data_base
-    for index, transaction in enumerate(transactions, start=1):  # Changed
-        uID, attribute, newValue = transaction
-        for db in data_base[1:]:
-            if db[0] == uID:
-                DB_Log.append({'Transaction': index, 'Time': datetime.now(), 'Before': db.copy()})
-                attribute_index = data_base[0].index(attribute)
-                db[attribute_index] = newValue
-                committed_entry = db.copy()
-                DB_Log.append({'Transaction': index, 'Time': datetime.now(), 'After': committed_entry, 'Committed': True})
-                break
+    uID, attribute, newValue = transaction
+    for db_entry in data_base[1:]:
+        if db_entry[0] == uID:
+            original_entry = db_entry.copy()
+            attribute_index = data_base[0].index(attribute)
+            db_entry[attribute_index] = newValue
+            
+            if is_there_a_failure():
+                print(f"Transaction {index} failed. \n")
+                db_entry[attribute_index] = original_entry[attribute_index]  # Revert change
+                DB_Log.append({'Transaction': index, 'Before': original_entry, 'After': db_entry.copy(), 'Committed': False})
+                return False
+            else:
+                DB_Log.append({'Transaction': index, 'Before': original_entry, 'After': db_entry.copy(), 'Committed': True})
+                return True
 
-
+def transaction_processing():
+    all_successful = True  # Assume all transactions will be successful
+    for index, transaction in enumerate(transactions, start=1):
+        print(f"\nProcessing transaction No. {index}. UPDATES have not been committed yet...")
+        if not process_transaction(index, transaction):
+            recovery_script(DB_Log)
+            all_successful = False  # A failure occurred, indicating not all transactions were successful
+            break  # Stop further processing
+        else:
+            print(f"Transaction {index} completed successfully.")
+    return all_successful
+   
 def read_file(file_name:str)->list:
     '''
     Read the contents of a CSV file line-by-line and return a list of lists
@@ -103,40 +118,27 @@ def transactionLog(log, file_name):
 
 def main():
     global data_base
-    number_of_transactions = len(transactions)
-    must_recover = False
     data_base = read_file('Employees_DB_ADV.csv')
-    failing_transaction_index = None
-
-    for index, _ in enumerate(transactions):  # Use enumerate to track index
-        print(f"\nProcessing transaction No. {index+1}.")
-        print("UPDATES have not been committed yet...\n")
-        transaction_processing()
-        
-        failure = is_there_a_failure() 
-        if failure:
-            must_recover = True
-            failing_transaction_index = index + 1  # Store the failed transaction index
-            print(f'There was a failure whilst processing transaction No. {failing_transaction_index}.')
-            break  # Exit loop on failure
-
-    if must_recover:
-        recovery_script(DB_Log)
-        newTable(DB_Log, 'New_Employees_DB_ADV.csv')
-        transactionLog(DB_Log, 'TransactionLog.csv') 
-
-        # Print the failed transaction index
-        print(f'The failure occurred at transaction No. {failing_transaction_index}')
-    else:
-        newTable(DB_Log, 'New_Employees_DB_ADV.csv')
-        transactionLog(DB_Log, 'TransactionLog.csv') 
-        print("All transactions ended up well. Committed transactions are saved to 'Committed_Transactions.csv' file.")
-        print("Updates to the database were committed!\n")
-        print('The data entries AFTER updates -and RECOVERY, if necessary- are presented below:')
-
+    
+    print('The data entries BEFORE updates are presented below:')
     for item in data_base:
         print(item)
+
+    # Process transactions and capture the outcome
+    all_transactions_successful = transaction_processing()
+
+    newTable(DB_Log, 'New_Employees_DB_ADV.csv')
+    transactionLog(DB_Log, 'TransactionLog.csv')
+    
+    # Adjust final messaging based on transaction outcomes
+    if all_transactions_successful:
+        print("All transactions processed successfully. Updates have been committed to the database.")
+    else:
+        print("Not all transactions ended well. Please review the recovery actions taken.")
+
+    print('The data entries AFTER updates -and RECOVERY, if necessary- are presented below:')
+    for item in data_base:
+        print(item)
+
         
 main()
-
-
