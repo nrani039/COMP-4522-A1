@@ -1,4 +1,4 @@
-# Adv DB Winter 2024 - 1
+# Adv DB Winter 2024 - 1 good version
 
 import random
 import csv
@@ -29,26 +29,6 @@ def recovery_script(log:list):  #<--- Your CODE
     print("Calling your recovery script with DB_Log as an argument.")
     print("Recovery in process ...\n")
     pass
-
-# def transaction_processing(): #<-- Your CODE
-#     global DB_Log
-#     global data_base 
-#     header = data_base[0]
-#     for transaction in transactions:
-#         uID, attribute, newValue = transaction
-#         for db in data_base[1:]: 
-#             if db[0] == uID:  
-#                 DB_Log.append({'Before': db.copy()})  
-#                 attribute_index = header.index(attribute)
-#                 # attribute_index = data_base[0].index(attribute)  
-#                 db[attribute_index] = newValue  
-#                 DB_Log.append({'After': db.copy()})  
-#                 break
-#     '''
-#     1. Process transaction in the transaction queue.
-#     2. Updates DB_Log accordingly
-#     3. This function does NOT commit the updates, just execute them
-#     '''
 
 def transaction_processing():
     global DB_Log
@@ -100,28 +80,26 @@ def is_there_a_failure()->bool:
         result = False
     return result
 
-#Write a new CSV file when all of the transaction has been successfully commited and updated. 
-def writeCommittedTransactionToCSV(log, file_name):
+def newTable(log, file_name):
     committed_transactions = [entry['After'] for entry in log if entry.get('Committed')]
 
     with open(file_name, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
-        writer.writerow(data_base[0])  
-        for transaction in committed_transactions:
-            writer.writerow(transaction)
+        writer.writerow(data_base[0])
+        for item in data_base:
+            writer.writerow(item)
 
-
-def writeTransactionLogToCSV(log, file_name):
+def transactionLog(log, file_name):
     with open(file_name, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(['Transaction', 'Time', 'Status'])
+        
         for entry in log:
-            status = 'Committed' if entry.get('Committed') else 'Rolled back'
             transaction = entry.get('Transaction', '')
+            status = 'Committed' if entry.get('Committed') else 'Rolled back'
             time = entry.get('Time', '')
             writer.writerow([transaction, time, status])
-
-# Modify your main function to keep track of the current transaction number
+                       
 
 def main():
     global data_base
@@ -129,11 +107,11 @@ def main():
     must_recover = False
     data_base = read_file('Employees_DB_ADV.csv')
     failing_transaction_index = None
-    
+
     for index, _ in enumerate(transactions):  # Use enumerate to track index
         print(f"\nProcessing transaction No. {index+1}.")
         print("UPDATES have not been committed yet...\n")
-        transaction_processing()  
+        transaction_processing()
         
         failure = is_there_a_failure() 
         if failure:
@@ -144,19 +122,21 @@ def main():
 
     if must_recover:
         recovery_script(DB_Log)
-        writeTransactionLogToCSV(DB_Log, 'FailLog.csv') 
+        newTable(DB_Log, 'New_Employees_DB_ADV.csv')
+        transactionLog(DB_Log, 'TransactionLog.csv') 
+
         # Print the failed transaction index
         print(f'The failure occurred at transaction No. {failing_transaction_index}')
     else:
-        writeCommittedTransactionToCSV(DB_Log, 'Committed_Transactions.csv')
-        writeTransactionLogToCSV(DB_Log, 'CommitLog.csv') 
+        newTable(DB_Log, 'New_Employees_DB_ADV.csv')
+        transactionLog(DB_Log, 'TransactionLog.csv') 
         print("All transactions ended up well. Committed transactions are saved to 'Committed_Transactions.csv' file.")
         print("Updates to the database were committed!\n")
         print('The data entries AFTER updates -and RECOVERY, if necessary- are presented below:')
-        
+
     for item in data_base:
         print(item)
-
+        
 main()
 
 
