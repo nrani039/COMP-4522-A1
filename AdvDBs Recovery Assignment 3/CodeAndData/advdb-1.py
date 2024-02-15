@@ -27,9 +27,7 @@ def recovery_script(log):
                 if db_entry[0] == before_state[0]:
                     data_base[i] = before_state
             break
-    '''
-    Restore the database to stable and sound condition, by processing the DB log.
-    '''
+
     print("Calling your recovery script with DB_Log as an argument.")
     print("Recovery in process ...\n")
     pass
@@ -158,7 +156,6 @@ def main():
     newTable(DB_Log, 'New_Employees_DB_ADV.csv')
     transactionLog(DB_Log, 'TransactionLog.csv')
     
-    # Adjust final messaging based on transaction outcomes
     if all_transactions_successful:
         print("All transactions processed successfully. Updates have been committed to the database.")
     else:
