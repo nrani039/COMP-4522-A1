@@ -1,4 +1,4 @@
-# Adv DB Winter 2024 - 1 good version
+# Adv DB Winter 2024 - 1
 
 import random
 import csv
