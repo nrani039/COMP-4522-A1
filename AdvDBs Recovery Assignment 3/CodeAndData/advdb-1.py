@@ -142,6 +142,7 @@ def writeTransactionLogToCSV(log, file_name):
 
 def main():
     global data_base
+    global DB_Log
     number_of_transactions = len(transactions)
     must_recover = False
     data_base = read_file('Employees_DB_ADV.csv')
