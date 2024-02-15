@@ -14,6 +14,10 @@ transactions = [['1', 'Department', 'Music'], ['5', 'Civil_status', 'Divorced'],
 DB_Log = [] # <-- You WILL populate this as you go
 
 
+'''
+Responsible for restoring the database to a stable and sound condition after a failure.
+It processes the database log in reverse order, reverting changes made by transactions up to the point of failure.
+'''
 def recovery_script(log):
     global data_base
     for log_entry in reversed(log):
@@ -30,6 +34,11 @@ def recovery_script(log):
     print("Recovery in process ...\n")
     pass
 
+
+'''
+Processes a transaction by updating an attribute for a record identified by its unique ID. 
+On a simulated failure, it reverts changes and logs the transaction as unsuccessful; otherwise, it logs it as successful.
+'''
 def process_transaction(index, transaction):
     global DB_Log
     uID, attribute, newValue = transaction
@@ -48,6 +57,10 @@ def process_transaction(index, transaction):
                 DB_Log.append({'Transaction': index, 'Before': original_entry, 'After': db_entry.copy(), 'Committed': True})
                 return True
 
+
+'''
+Sequentially processes transactions from the global list, updating the database. On failure, invokes recovery_script to revert changes and halts further processing, while providing transaction status feedback
+''' 
 def transaction_processing():
     all_successful = True  # Assume all transactions will be successful
     for index, transaction in enumerate(transactions, start=1):
@@ -59,11 +72,12 @@ def transaction_processing():
         else:
             print(f"Transaction {index} completed successfully.")
     return all_successful
-   
+
+
+'''
+Reads a CSV file into a list of lists, each representing a row from the file, and prints the data before returning it.
+''' 
 def read_file(file_name:str)->list:
-    '''
-    Read the contents of a CSV file line-by-line and return a list of lists
-    '''
     data = []
     #
     # one line at-a-time reading file
@@ -84,10 +98,11 @@ def read_file(file_name:str)->list:
     print(f"\nThere are {size} records in the database, including one header.\n")
     return data
 
+
+'''
+Simulates randomly a failure, returning True or False, accordingly
+'''
 def is_there_a_failure()->bool:
-    '''
-    Simulates randomly a failure, returning True or False, accordingly
-    '''
     value = random.randint(0,1)
     if value == 1:
         result = True
@@ -95,6 +110,10 @@ def is_there_a_failure()->bool:
         result = False
     return result
 
+
+'''
+Writes the database state to a CSV file, including all entries regardless of transaction status.
+'''
 def newTable(log, file_name):
     committed_transactions = [entry['After'] for entry in log if entry.get('Committed')]
 
@@ -104,6 +123,10 @@ def newTable(log, file_name):
         for item in data_base:
             writer.writerow(item)
 
+
+'''
+Creates a CSV log file detailing each transaction's index, timestamp, and status (Committed/Rolled back).
+'''
 def transactionLog(log, file_name):
     with open(file_name, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
@@ -114,8 +137,13 @@ def transactionLog(log, file_name):
             status = 'Committed' if entry.get('Committed') else 'Rolled back'
             time = entry.get('Time', '')
             writer.writerow([transaction, time, status])
-                       
 
+
+'''
+The main entry point of the program. It loads the initial database state, processes transactions, and updates the database. 
+It then logs the transactions and the final database state to CSV files. The function also provides feedback on the 
+transaction outcomes and the state of the database before and after updates.
+'''
 def main():
     global data_base
     data_base = read_file('Employees_DB_ADV.csv')
