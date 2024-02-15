@@ -123,19 +123,18 @@ def newTable(log, file_name):
 
 
 '''
-Creates a CSV log file detailing each transaction's index, timestamp, and status (Committed/Rolled back).
+Creates a CSV log file detailing each transaction's index, and status (Committed/Rolled back).
 '''
 def transactionLog(log, file_name):
     with open(file_name, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
-        writer.writerow(['Transaction', 'Time', 'Status'])
+        writer.writerow(['Transaction', 'Status'])
 
         #creates a new row for each transaction with the specific columns
         for entry in log:
             transaction = entry.get('Transaction', '')
             status = 'Committed' if entry.get('Committed') else 'Rolled back'
-            time = entry.get('Time', '')
-            writer.writerow([transaction, time, status])
+            writer.writerow([transaction, status])
 
 
 '''
