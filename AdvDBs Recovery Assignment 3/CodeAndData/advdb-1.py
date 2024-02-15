@@ -48,7 +48,7 @@ def process_transaction(index, transaction):
             
             if is_there_a_failure():
                 print(f"Transaction {index} failed. \n")
-                db_entry[attribute_index] = original_entry[attribute_index]  # Revert change
+                db_entry[attribute_index] = original_entry[attribute_index]
                 DB_Log.append({'Transaction': index, 'Before': original_entry, 'After': db_entry.copy(), 'Committed': False})
                 return False
             else:
@@ -129,7 +129,8 @@ def transactionLog(log, file_name):
     with open(file_name, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(['Transaction', 'Time', 'Status'])
-        
+
+        #creates a new row for each transaction with the specific columns
         for entry in log:
             transaction = entry.get('Transaction', '')
             status = 'Committed' if entry.get('Committed') else 'Rolled back'
@@ -143,19 +144,24 @@ It then logs the transactions and the final database state to CSV files. The fun
 transaction outcomes and the state of the database before and after updates.
 '''
 def main():
+    #make the data_base global and accessibe to all functions
     global data_base
     data_base = read_file('Employees_DB_ADV.csv')
-    
+
+    #prints the initial Employees file row by row
     print('The data entries BEFORE updates are presented below:')
     for item in data_base:
         print(item)
 
-    # Process transactions and capture the outcome
+    # Process transactions and capture the outcome by calling the transaction_processing() function
     all_transactions_successful = transaction_processing()
 
+    #Create a new csv file with the transactions so as not to overwrite the original
     newTable(DB_Log, 'New_Employees_DB_ADV.csv')
+    #Create the log for the transactions to keep track of them, store in a csv file
     transactionLog(DB_Log, 'TransactionLog.csv')
-    
+
+
     if all_transactions_successful:
         print("All transactions processed successfully. Updates have been committed to the database.")
     else:
